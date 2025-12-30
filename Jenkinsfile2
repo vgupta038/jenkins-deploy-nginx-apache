@@ -2,30 +2,20 @@ pipeline {
     agent any
     
     stages {
-        stage('Create  directory for the WEB Application')        
-       {
-            steps {
-                //First, drop the directory if exists
-                sh 'rm -rf /home/jenkins/app-web'
-                //Create the directory
-                sh 'mkdir /home/jenkins/app-web'               
-            }
-        }
-        stage('Drop the containers'){   
-            failFast true
-            parallel{ 
-                stage('Drop apache container'){
-                    steps {
-                        echo 'droping the Apache container...'
+        stage('Drop the containers'){
+            parallel{
+                stage('Drop the Apache httpd container'){
+                    steps{
+                        echo 'droping the apache container...'
                         sh 'ocker rm -f app-web-apache'
                     }
                 }
-                stage('Drop Nginx Container'){
-                    steps{
-                        echo 'droping the Nginx container...'
+                 stage('Drop the Nginx container'){
+                   steps{
+                         echo 'droping the nginx container...'
                         sh 'docker rm -f app-web-nginx'
-                    }
-                }           
+                   }
+                }
             }
         }
         //Creating the containers in Parallel
@@ -35,22 +25,22 @@ pipeline {
                 {           
                     steps {
                     echo 'Creating the Apache Container...'
-                    sh 'docker run -dit --name app-web-apache -p 9100:80  -v /home/jenkins/app-web:/usr/local/apache2/htdocs/ httpd'
+                    sh 'docker run -dit --name app-web-apache -p 9100:80 httpd'
                     }
                 }
                 stage('Create the Nginx container') {
                    steps {
                    echo 'Creating the Apache container...'
-                   sh 'docker run -dit --name app-web-nginx -p 9200:80  -v /home/jenkins/app-web:/usr/share/nginx/html nginx'         
+                   sh 'docker run -dit --name app-web-nginx -p 9200:80 nginx'         
                    }
                 }       
             }   
-        }
-        //Copy the application   
+        }   
         stage('Copy the web application to the container directory') {
             steps {
                 echo 'Copying web application...'             
-                sh 'cp -r web/* /home/jenkins/app-web'
+                sh 'docker cp web/. app-web-apache:/usr/local/apache2/htdocs'
+                sh 'docker cp web/. app-web-nginx:/usr/share/nginx/html/'
             }
         }
     }
