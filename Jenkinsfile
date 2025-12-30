@@ -31,8 +31,8 @@ pipeline {
         stage('Copy the web application to the container directory') {
             steps {
                 echo 'Copying web application...'             
-                sh 'cp -r web/* app-web-apache:/usr/local/apache2/htdocs'
-                sh 'cp -r web/* app-web-nginx:/usr/share/nginx/html/'
+                sh 'docker cp web/. app-web-apache:/usr/local/apache2/htdocs'
+                sh 'docker cp web/. app-web-nginx:/usr/share/nginx/html/'
             }
         }
     }
